@@ -188,12 +188,12 @@ def process_mwanachama(namba, data):
 
 
 @app.route("/")
-def home():
+def index():
   return render_template("index.html")
 
 
-@app.route("/admin-page")
-def admin_page():
+@app.route("/admin")
+def admin():
   return render_template("admin.html")
 
 
