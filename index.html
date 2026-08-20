@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D.MBONANKILA FAMILY - Angalia Taarifa za Mwanachama</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 650px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1b5e20;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #1b5e20;
+        }
+        .result-card {
+            display: none;
+            margin-top: 25px;
+            border-top: 2px solid #2e7d32;
+            padding-top: 15px;
+        }
+        .info-header {
+            margin-bottom: 15px;
+        }
+        .info-header p {
+            margin: 5px 0;
+            font-size: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #0d1b2a;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .summary {
+            margin-top: 20px;
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .summary p {
+            margin: 8px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .text-green { color: #2e7d32; }
+        .text-red { color: #c62828; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>D. MBONANKILA FAMILY </h2>
+    
+    <div class="form-group">
+        <label for="namba">Weka Namba yako ya Simu (Mfano: 255795085702):</label>
+        <input type="text" id="namba" placeholder="255...">
+    </div>
+    
+    <button onclick="tafutaMwanachama()">Angalia Taarifa</button>
+
+    <div class="result-card" id="result">
+        <div class="info-header">
+            <h3 id="res-jina" style="margin: 0; color: #1b5e20;">-</h3>
+            <p><strong>Cheo:</strong> <span id="res-cheo">-</span></p>
+            <p><strong>Namba:</strong> <span id="res-namba">-</span></p>
+        </div>
+
+        <p><strong>Muhtasari wa Malipo (Aprili - Desemba 2026):</strong></p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Mwezi</th>
+                    <th>Kiingilio</th>
+                    <th>Ada</th>
+                    <th>Tarehe</th>
+                </tr>
+            </thead>
+            <tbody id="res-table-body">
+            </tbody>
+        </table>
+
+        <div class="summary">
+            <p>Jumla Iliyolipwa: <span class="text-green" id="res-total-pesa">TSH 0</span></p>
+            <p>Jumla ya Faini: <span class="text-red" id="res-total-faini">TSH 0</span></p>
+            <p>Jumla ya Deni: <span class="text-red" id="res-total-deni">TSH 0</span></p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mpangilio sahihi wa miezi kuanzia April hadi December
+const mieziOrder = ["April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+async function tafutaMwanachama() {
+    const namba = document.getElementById('namba').value.trim();
+    if (!namba) {
+        alert('Tafadhali ingiza namba ya simu!');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/mwanachama/${namba}`);
+        const data = await res.json();
+
+        if (data.success) {
+            const m = data.mwanachama;
+            document.getElementById('res-jina').innerText = m.jina;
+            document.getElementById('res-cheo').innerText = m.cheo;
+            document.getElementById('res-namba').innerText = m.namba;
+
+            let rows = '';
+            
+            // Kupitia miezi kwa mpangilio sahihi wa kalenda
+            mieziOrder.forEach(mwezi => {
+                if (m.miezi[mwezi]) {
+                    const details = m.miezi[mwezi];
+                    rows += `<tr>
+                        <td><strong>${mwezi}</strong></td>
+                        <td>${details.kiingilio > 0 ? 'TSH ' + details.kiingilio.toLocaleString() : '-'}</td>
+                        <td>${details.ada > 0 ? 'TSH ' + details.ada.toLocaleString() : '-'}</td>
+                        <td>${details.tarehe || '-'}</td>
+                    </tr>`;
+                }
+            });
+
+            document.getElementById('res-table-body').innerHTML = rows;
+            document.getElementById('res-total-pesa').innerText = 'TSH ' + m.total_pesa.toLocaleString();
+            document.getElementById('res-total-faini').innerText = 'TSH ' + m.total_faini.toLocaleString();
+            document.getElementById('res-total-deni').innerText = 'TSH ' + m.total_deni.toLocaleString();
+
+            document.getElementById('result').style.display = 'block';
+        } else {
+            alert(data.message);
+            document.getElementById('result').style.display = 'none';
+        }
+    } catch (err) {
+        alert('Namba haijapatikana au kuna matatizo kwenye server.');
+    }
+}
+</script>
+
+</body>
+</html>

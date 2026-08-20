@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D.MBONANKILA FAMILY - Usimamizi wa Admin</title>
+    <!-- Libraries za kupakua Excel na PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 10px; font-size: 12px; }
+        .container { background: #fff; padding: 15px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box; }
+        h2 { color: #1b5e20; margin-bottom: 5px; font-size: 18px; }
+        .instructions { font-size: 11px; color: #555; margin-bottom: 15px; }
+        
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .controls input { padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px; }
+        .controls button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; font-size: 12px; margin-left: 5px; }
+        .btn-blue { background-color: #0288d1; }
+        .btn-orange { background-color: #f57c00; }
+        .btn-green { background-color: #2e7d32; }
+        .btn-add { background-color: #1565c0; }
+        .btn-whatsapp { background-color: #25D366; padding: 5px 8px; font-size: 11px; }
+        .btn-delete { background-color: #d32f2f; padding: 5px 8px; font-size: 11px; margin-left: 3px; }
+
+        .table-wrapper { overflow-x: auto; max-height: 75vh; overflow-y: auto; border: 1px solid #ddd; }
+        table { border-collapse: collapse; width: max-content; }
+        th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; white-space: nowrap; }
+        th { background-color: #0d1b2a; color: white; position: sticky; top: 0; z-index: 2; font-size: 11px; }
+        
+        /* Sticky columns for the first 4 columns (#, Simu, Jina, Cheo) */
+        th:nth-child(1), td:nth-child(1) { position: sticky; left: 0; background-color: #f0f0f0; z-index: 3; font-weight: bold; width: 30px; }
+        th:nth-child(2), td:nth-child(2) { position: sticky; left: 35px; background-color: #f0f0f0; z-index: 3; font-weight: bold; }
+        th:nth-child(3), td:nth-child(3) { position: sticky; left: 135px; background-color: #f0f0f0; z-index: 3; }
+        th:nth-child(4), td:nth-child(4) { position: sticky; left: 285px; background-color: #f0f0f0; z-index: 3; }
+        
+        th:nth-child(1), th:nth-child(2), th:nth-child(3), th:nth-child(4) { z-index: 4; background-color: #0d1b2a; }
+
+        input[type="number"], input[type="date"] { width: 70px; padding: 3px; font-size: 11px; border: 1px solid #aaa; border-radius: 3px; text-align: center; }
+        input[type="date"] { width: 105px; }
+        
+        .faini-text { color: red; font-weight: bold; }
+        .success-msg { color: green; margin-left: 10px; font-weight: bold; display: none; }
+        
+        /* Modal Style kwa Ongeza Member */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 10; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 350px; }
+        .modal-content h3 { margin-top: 0; color: #1b5e20; }
+        .form-group { margin-bottom: 12px; text-align: left; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+        .btn-cancel { background-color: #757575; color: white; }
+
+        /* Login Modal */
+        #login-section { max-width: 400px; margin: 100px auto; padding: 20px; background: white; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-radius: 8px; }
+        #login-section input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<div id="login-section">
+    <h2>Ingia Portal ya Admin</h2>
+    <input type="password" id="admin-pass" placeholder="Ingiza Password">
+    <br>
+    <button class="btn-green" onclick="loginAdmin()">Ingia</button>
+</div>
+
+<div class="container" id="dashboard-section" style="display:none;">
+    <h2>D.MBONANKILA FAMILY - Usimamizi wa Admin</h2>
+    <p class="instructions">
+        <strong>Orodha ya Wanachama Wote & Malipo (April - Dec 2026)</strong><br>
+        Jaza Tarehe ya Malipo, mfumo utahesabu Faini ya TSH 2,000 kiotomatiki kama tarehe imepita siku ya mwisho ya mwezi.<br>
+        <em>Kumbuka: Taarifa hujisave kiotomatiki pindi tu unapoandika na kubonyeza nje ya kiboksi.</em>
+        <span id="save-status" class="success-msg">✅ Imesaviwa!</span>
+    </p>
+    
+    <div class="controls">
+        <input type="text" id="search-input" onkeyup="tafutaMwanachamaTable()" placeholder="Tafuta Jina / Namba...">
+        <div>
+            <button class="btn-add" onclick="funguaModalAddMember()">➕ Ongeza Member Mpya</button>
+            <button class="btn-blue" onclick="pakuaExcel()">📥 Pakua Excel</button>
+            <button class="btn-orange" onclick="pakuaPDF()">📄 Pakua PDF</button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="main-table">
+            <thead id="table-head">
+                <!-- Headers generated by JS -->
+            </thead>
+            <tbody id="admin-table-body">
+                <!-- Rows generated by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal ya Kuongeza Mwanachama Mpya -->
+<div class="modal" id="addMemberModal">
+    <div class="modal-content">
+        <h3>Ongeza Mwanachama Mpya</h3>
+        <div class="form-group">
+            <label>Namba ya Simu (Mfano: 2557...):</label>
+            <input type="text" id="new-namba" placeholder="2557XXXXXXXX">
+        </div>
+        <div class="form-group">
+            <label>Jina Kamili:</label>
+            <input type="text" id="new-jina" placeholder="Mfano: JOHN MBONANKIRA">
+        </div>
+        <div class="form-group">
+            <label>Cheo:</label>
+            <select id="new-cheo">
+                <option value="MEMBER">MEMBER</option>
+                <option value="CHAIRPERSON">CHAIRPERSON</option>
+                <option value="VICE CHAIRPERSON">VICE CHAIRPERSON</option>
+                <option value="SECRETARY">SECRETARY</option>
+                <option value="ASSISTANT SECRETARY">ASSISTANT SECRETARY</option>
+                <option value="TREASURER">TREASURER</option>
+                <option value="ACCOUNTANT">ACCOUNTANT</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="fungaModalAddMember()">Ghairi</button>
+            <button class="btn-green" onclick="hifadhiMwanachamaMpya()">Hifadhi</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const mieziInfo = [
+    { name: "April", label: "Aprili 2026 (Deadline: 30-Apr)" },
+    { name: "May", label: "Mei 2026 (Deadline: 31-May)" },
+    { name: "June", label: "Juni 2026 (Deadline: 30-Jun)" },
+    { name: "July", label: "Julai 2026 (Deadline: 31-Jul)" },
+    { name: "August", label: "Agosti 2026 (Deadline: 31-Aug)" },
+    { name: "September", label: "Septemba 2026 (Deadline: 30-Sep)" },
+    { name: "October", label: "Oktoba 2026 (Deadline: 31-Oct)" },
+    { name: "November", label: "Novemba 2026 (Deadline: 30-Nov)" },
+    { name: "December", label: "Desemba 2026 (Deadline: 31-Dec)" }
+];
+
+let wanachamaData = [];
+
+async function loginAdmin() {
+    const pass = document.getElementById('admin-pass').value;
+    try {
+        const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({password: pass})
+        });
+        const data = await res.json();
+        if (data.success) {
+            wanachamaData = data.wanachama;
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('dashboard-section').style.display = 'block';
+            tengenezaHeaders();
+            onyeshaWanachama(wanachamaData);
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert('Imeshindwa kuunganishwa na server!');
+    }
+}
+
+function tengenezaHeaders() {
+    let head = document.getElementById('table-head');
+    let row1 = `<tr>
+        <th rowspan="2" style="min-width: 30px;">#</th>
+        <th rowspan="2" style="min-width: 100px;">Namba ya Simu</th>
+        <th rowspan="2" style="min-width: 150px;">Jina Kamili</th>
+        <th rowspan="2" style="min-width: 100px;">Cheo</th>`;
+    let row2 = `<tr>`;
+
+    mieziInfo.forEach((m, idx) => {
+        let cols = (idx === 0) ? 4 : 3;
+        row1 += `<th colspan="${cols}">${m.label}</th>`;
+        
+        if(idx === 0) row2 += `<th>Kiingilio</th>`;
+        row2 += `<th>Ada</th><th>Tarehe</th><th>Faini</th>`;
+    });
+
+    row1 += `<th rowspan="2">Jumla Iliyolipwa</th><th rowspan="2">Jumla ya Faini</th><th rowspan="2">Jumla ya Deni</th><th rowspan="2">Vitendo</th></tr>`;
+    row2 += `</tr>`;
+    head.innerHTML = row1 + row2;
+}
+
+function onyeshaWanachama(list) {
+    let tbody = document.getElementById('admin-table-body');
+    let rowsHTML = '';
+
+    list.forEach((m, index) => {
+        let r = `<tr>
+            <td>${index + 1}</td>
+            <td>${m.namba}</td>
+            <td>${m.jina}</td>
+            <td>${m.cheo}</td>`;
+
+        mieziInfo.forEach((mweziObj, idx) => {
+            let jinaMwezi = mweziObj.name;
+            let mData = m.miezi[jinaMwezi] || {};
+            let kiingilio = mData.kiingilio || '';
+            let ada = mData.ada || '';
+            let tarehe = mData.tarehe || '';
+            let faini = mData.faini || 0;
+
+            if (idx === 0) {
+                r += `<td><input type="number" value="${kiingilio}" onchange="hifadhiMojaKwaMoja('${m.namba}', '${jinaMwezi}', 'kiingilio', this.value)"></td>`;
+            }
+            r += `<td><input type="number" value="${ada}" onchange="hifadhiMojaKwaMoja('${m.namba}', '${jinaMwezi}', 'ada', this.value)"></td>
+                  <td><input type="date" value="${tarehe}" onchange="hifadhiMojaKwaMoja('${m.namba}', '${jinaMwezi}', 'tarehe', this.value)"></td>
+                  <td class="faini-text">TSH ${(faini).toLocaleString()}</td>`;
+        });
+
+        r += `<td style="color: green; font-weight:bold;">TSH ${(m.total_pesa || 0).toLocaleString()}</td>
+              <td style="color: #d32f2f; font-weight:bold;">TSH ${(m.total_faini || 0).toLocaleString()}</td>
+              <td style="color: red; font-weight:bold;">TSH ${(m.total_deni || 0).toLocaleString()}</td>
+              <td>
+                  <button class="btn-whatsapp" onclick="shareWhatsApp('${m.jina}', '${m.namba}', ${m.total_pesa}, ${m.total_faini}, ${m.total_deni})">📲 Share</button>
+                  <button class="btn-delete" onclick="futaMwanachama('${m.namba}', '${m.jina}')">🗑️ Futa</button>
+              </td>
+        </tr>`;
+        rowsHTML += r;
+    });
+
+    tbody.innerHTML = rowsHTML;
+}
+
+async function hifadhiMojaKwaMoja(namba, mwezi, field, value) {
+    let payload = { namba: namba, mwezi: mwezi };
+    payload[field] = value === '' ? 0 : value;
+
+    try {
+        const res = await fetch('/api/admin/update-malipo', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            let index = wanachamaData.findIndex(w => w.namba === namba);
+            if(index !== -1) wanachamaData[index] = data.mwanachama;
+            
+            let status = document.getElementById('save-status');
+            status.style.display = 'inline';
+            setTimeout(() => { status.style.display = 'none'; }, 2000);
+            
+            onyeshaWanachama(wanachamaData);
+        }
+    } catch (err) {
+        console.error('Hitilafu wakati wa kusave:', err);
+    }
+}
+
+function funguaModalAddMember() {
+    document.getElementById('addMemberModal').style.display = 'flex';
+}
+
+function fungaModalAddMember() {
+    document.getElementById('addMemberModal').style.display = 'none';
+}
+
+async function hifadhiMwanachamaMpya() {
+    const namba = document.getElementById('new-namba').value.trim();
+    const jina = document.getElementById('new-jina').value.trim();
+    const cheo = document.getElementById('new-cheo').value;
+
+    if (!namba || !jina) {
+        alert('Tafadhali ingiza Namba ya Simu na Jina Kamili!');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/admin/add-mwanachama', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ namba, jina, cheo })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            alert(data.message);
+            fungaModalAddMember();
+            document.getElementById('new-namba').value = '';
+            document.getElementById('new-jina').value = '';
+            loginAdmin();
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert('Hitilafu imetokea wakati wa kuongeza mwanachama!');
+    }
+}
+
+async function futaMwanachama(namba, jina) {
+    let thibitisha = confirm(`Je, una uhakika unataka kumfuta/kumtoa mwanachama "${jina}" (${namba}) kwenye mfumo? Action hii haiwezi kurudishwa!`);
+    
+    if (!thibitisha) return;
+
+    try {
+        const res = await fetch('/api/admin/delete-mwanachama', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ namba })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            alert(data.message);
+            loginAdmin(); // Refresh data mpya kutoka server
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert('Hitilafu imetokea wakati wa kumfuta mwanachama!');
+    }
+}
+
+function tafutaMwanachamaTable() {
+    let query = document.getElementById('search-input').value.toLowerCase();
+    let filtered = wanachamaData.filter(m => 
+        m.jina.toLowerCase().includes(query) || m.namba.includes(query)
+    );
+    onyeshaWanachama(filtered);
+}
+
+function shareWhatsApp(jina, namba, iliyolipwa, faini, deni) {
+    let ujumbe = `Habari ${jina},\n\nMuhtasari wa malipo yako ya UFAWAKI:\n- Jumla Iliyolipwa: TSH ${iliyolipwa.toLocaleString()}\n- Jumla ya Faini: TSH ${faini.toLocaleString()}\n- Jumla ya Deni: TSH ${deni.toLocaleString()}\n\nTafadhali fanya malipo kwa wakati. Ahsante!`;
+    let url = `https://wa.me/${namba}?text=${encodeURIComponent(ujumbe)}`;
+    window.open(url, '_blank');
+}
+
+function pakuaExcel() {
+    let wb = XLSX.utils.book_new();
+    let dataToExport = wanachamaData.map((m, i) => ({
+        "Na": i + 1,
+        "Namba ya Simu": m.namba,
+        "Jina Kamili": m.jina,
+        "Cheo": m.cheo,
+        "Jumla Iliyolipwa (TSH)": m.total_pesa,
+        "Jumla ya Faini (TSH)": m.total_faini,
+        "Jumla ya Deni (TSH)": m.total_deni
+    }));
+    let ws = XLSX.utils.json_to_sheet(dataToExport);
+    XLSX.utils.book_append_sheet(wb, ws, "Wanachama");
+    XLSX.writeFile(wb, "Ripoti_ya_Wanachama_UFAWAKI.xlsx");
+}
+
+function pakuaPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+    doc.text("D. MBONANKILA FAMILY (UFAWAKI) - RIPOTI YA ADMIN", 14, 15);
+    let rows = wanachamaData.map((m, i) => [
+        i + 1, m.namba, m.jina, m.cheo, "TSH " + (m.total_pesa || 0).toLocaleString(), "TSH " + (m.total_faini || 0).toLocaleString(), "TSH " + (m.total_deni || 0).toLocaleString()
+    ]);
+    doc.autoTable({
+        head: [['#', 'Namba', 'Jina Kamili', 'Cheo', 'Jumla Iliyolipwa', 'Jumla ya Faini', 'Jumla ya Deni']],
+        body: rows,
+        startY: 20
+    });
+    doc.save("Ripoti_ya_Wanachama_UFAWAKI.pdf");
+}
+</script>
+
+</body>
+</html>
